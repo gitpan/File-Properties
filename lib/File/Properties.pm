@@ -8,12 +8,12 @@
 # Copyright © 2010,2011 Brendt Wohlberg <wohl@cpan.org>
 # See distribution LICENSE file for license details.
 #
-# Most recent modification: 5 November 2011
+# Most recent modification: 22 December 2011
 #
 # ----------------------------------------------------------------------------
 
 package File::Properties;
-our $VERSION = 0.01;
+our $VERSION = 0.02;
 
 use File::Properties::Cache;
 use File::Properties::Media;
@@ -83,6 +83,30 @@ sub string {
   my $s = $self->SUPER::string($levl);
   $s .=  $self->_image->string($levl) if ($self->isimage);
   return $s;
+}
+
+# ----------------------------------------------------------------------------
+# Get flag indicating whether data was retrieved from the cache
+# ----------------------------------------------------------------------------
+sub cachestatus {
+  my $self = shift;
+
+  my $mkey = (@_)?shift:undef;
+  if (defined $mkey) {
+    if ($mkey eq $File::Properties::Image::CacheTableName) {
+      return $self->_image->_fromcache;
+    } else {
+      return $self->_fromcache($mkey);
+    }
+  } else {
+    return (not $self->isimage or $self->_image->_fromcache) and
+           (not $self->isreg or $self->_fromcache(
+		       $File::Properties::Regular::CacheTableName)) and
+	   (not $self->iscompressed or $self->_fromcache(
+		       $File::Properties::Compressed::CacheTableName)) and
+	   (not $self->ismedia or $self->_fromcache(
+		       $File::Properties::Media::CacheTableName));
+  }
 }
 
 
@@ -363,6 +387,17 @@ Determine whether the file is an image file.
   print $fp->string . "\n";
 
 Construct a string representing the object data.
+
+=item B<cachestatus>
+
+  if ($fp->cachestatus) {
+    printf("All properties were retrieved from cache\n");
+  } elsif ($fp->cachestatus(
+                     $File::Properties::Regular::CacheTableName) {
+    printf("Regular file properties were retrieved from cache\n");
+  }
+
+Determine whether properties were retrieved from the cache
 
 =item B<_cacheinit>
 

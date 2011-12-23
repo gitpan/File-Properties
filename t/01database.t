@@ -14,7 +14,7 @@ use File::Temp;
 
 ## Create temporary database file and create a
 ## File::Properties::Database object attached to it
-my $tmpdb = File::Temp->new(SUFFIX => '.db', UNLINK => 1);
+my $tmpdb = File::Temp->new(EXLOCK => 0, SUFFIX => '.db', UNLINK => 1);
 my $opts = {};
 ok(my $fpd = File::Properties::Database->new($tmpdb->filename, $opts));
 

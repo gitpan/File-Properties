@@ -5,12 +5,12 @@
 # Copyright © 2010,2011 Brendt Wohlberg <wohl@cpan.org>
 # See distribution LICENSE file for license details.
 #
-# Most recent modification: 16 October 2011
+# Most recent modification: 18 December 2011
 #
 # ----------------------------------------------------------------------------
 
 package File::Properties::Image;
-our $VERSION = 0.01;
+our $VERSION = 0.02;
 
 use File::Properties::Error;
 use File::Properties::Media;
@@ -60,6 +60,8 @@ sub _init {
       my $cent = $fpcr->cretrieve($CacheTableName,
 				  {'ContentDigest' => $fpmr->cdigest})) {
     $self->idigest($cent->{'ImageDigest'});
+    # Set flag indicating that this entry was obtained from the cache
+    $self->_fromcache(1);
   } else {
     # Get a file handle to the file, or to uncompressed content if it
     # is compressed
@@ -69,6 +71,8 @@ sub _init {
       _rawimagedigest($fcfh):_imagedigest($fcfh);
     # Record the computed image digest
     $self->idigest($idgs);
+    # Set flag indicating that this entry was not obtained from the cache
+    $self->_fromcache(0);
     ## If a File::Properties::Cache reference is specified, record the
     ## image digest entry in the cache
     if (defined $fpcr) {
@@ -128,6 +132,17 @@ sub _cacheclean {
   # digest in the File::Properties::Media cache table
   $fpcr->remove($itbl, {'Where' => "NOT EXISTS (SELECT * FROM $mtbl " .
 		               "WHERE ContentDigest = $itbl.ContentDigest)"});
+}
+
+
+# ----------------------------------------------------------------------------
+# Get or set flag indicating whether data was retrieved from the cache
+# ----------------------------------------------------------------------------
+sub _fromcache {
+  my $self = shift;
+
+  $self->{'rfcf'} = shift if (@_);
+  return $self->{'rfcf'};
 }
 
 

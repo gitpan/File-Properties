@@ -16,7 +16,7 @@ use Compress::Bzip2;
 
 ## Create a File::Properties::Cache object attached to a temporary
 ## database file
-my $tmpdb = File::Temp->new(SUFFIX => '.db');
+my $tmpdb = File::Temp->new(EXLOCK => 0, SUFFIX => '.db');
 my $opts = {};
 ok(my $fpc = File::Properties->cache($tmpdb->filename, $opts));
 
@@ -35,7 +35,7 @@ my $fpr;
 my $t0 = [gettimeofday];
 ok($fpr = File::Properties->new($tmpdt->filename, $fpc));
 my $t1 = [gettimeofday];
-ok(not $fpr->_fromcache);
+ok(not $fpr->cachestatus);
 ok($fpr->idigest eq $idgst);
 
 ## Create another File::Properties object for the temporary test file,
@@ -45,7 +45,7 @@ ok($fpr->idigest eq $idgst);
 my $t2 = [gettimeofday];
 ok($fpr = File::Properties->new($tmpdt->filename, $fpc));
 my $t3 = [gettimeofday];
-ok($fpr->_fromcache);
+ok($fpr->cachestatus);
 ok($fpr->idigest eq $idgst);
 
 # Second lookup via cache should be much faster

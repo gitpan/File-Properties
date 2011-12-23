@@ -7,12 +7,12 @@
 # Copyright © 2010,2011 Brendt Wohlberg <wohl@cpan.org>
 # See distribution LICENSE file for license details.
 #
-# Most recent modification: 21 October 2011
+# Most recent modification: 18 December 2011
 #
 # ----------------------------------------------------------------------------
 
 package File::Properties::Media;
-our $VERSION = 0.01;
+our $VERSION = 0.02;
 
 use File::Properties::Compressed;
 use base qw(File::Properties::Compressed);
@@ -61,7 +61,7 @@ sub _init {
     ## previously seen, and use Image::ExifTool to determine its
     ## medial file properties, which are then inserted into the media
     ## file cache.
-    if ($self->_fromcache) {
+    if ($self->_fromcache($File::Properties::Regular::CacheTableName)) {
       if (my $cent = $fpcr->cretrieve($CacheTableName,
 				 {'ContentDigest' => $self->SUPER::cdigest})) {
 	$self->mmimetype($cent->{'MediaMimeType'});
@@ -69,6 +69,8 @@ sub _init {
 	$self->mediatype($cent->{'MediaType'});
 	$self->datemod($cent->{'DateModified'});
 	$self->exifhash(thaw $cent->{'ExifHash'});
+	# Set flag indicating that this entry was obtained from the cache
+	$self->_fromcache($CacheTableName, 1);
       }
     } else {
       ## Attempt to extract EXIF properties from file content
@@ -103,6 +105,9 @@ sub _init {
 	    if (defined $val and not ref($val));
 	}
 	$self->exifhash($exfh);
+
+	# Set flag indicating that this entry was not obtained from the cache
+	$self->_fromcache($CacheTableName, 0);
 
 	if (defined $fpcr) {
 	  my $row = {'ContentDigest' => $self->SUPER::cdigest,

@@ -6,12 +6,12 @@
 # Copyright © 2010,2011 Brendt Wohlberg <wohl@cpan.org>
 # See distribution LICENSE file for license details.
 #
-# Most recent modification: 29 October 2011
+# Most recent modification: 18 December 2011
 #
 # ----------------------------------------------------------------------------
 
 package File::Properties::Regular;
-our $VERSION = 0.01;
+our $VERSION = 0.02;
 
 use File::Properties::Error;
 use File::Properties::Generic;
@@ -44,6 +44,8 @@ sub _init {
     # Set flag indicating whether file path is cached
     my $cptf = defined $fpcr?
       $fpcr->cproperties($CacheTableName, 'CachedPath'):1;
+    # Initialisation for _fromcache method
+    $self->{'rfcf'} = {};
     my $cent;
     ## If File::Properties::Cache reference specified and the cache
     ## contains an entry matching the base Generic object, set the mime
@@ -54,12 +56,12 @@ sub _init {
       $self->mimetype($cent->{'MimeType'});
       $self->digest($cent->{'Digest'});
       # Set flag indicating that this entry was obtained from the cache
-      $self->_fromcache(1);
+      $self->_fromcache($CacheTableName, 1);
     } else {
       $self->mimetype(_mimetype($self->path));
       $self->digest(_digest($self->path));
       # Set flag indicating that this entry was not obtained from the cache
-      $self->_fromcache(0);
+      $self->_fromcache($CacheTableName, 0);
       ## If a File::Properties::Cache reference is specified, record the
       ## mime type and digest in the cache
       if (defined $fpcr) {
@@ -264,8 +266,10 @@ sub _cacheclean {
 sub _fromcache {
   my $self = shift;
 
-  $self->{'rfcf'} = shift if (@_);
-  return $self->{'rfcf'};
+  my $mkey = shift;
+  $mkey = eval('$' . ref($self) . "::CacheTableName") if not defined $mkey;
+  $self->{'rfcf'}->{$mkey} = shift if (@_);
+  return $self->{'rfcf'}->{$mkey};
 }
 
 

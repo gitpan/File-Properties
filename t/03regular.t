@@ -15,7 +15,7 @@ use File::Temp;
 
 ## Create a File::Properties::Cache object attached to a temporary
 ## database file
-my $tmpdb = File::Temp->new(SUFFIX => '.db', UNLINK => 1);
+my $tmpdb = File::Temp->new(EXLOCK => 0, SUFFIX => '.db', UNLINK => 1);
 my $opts = {};
 ok(my $fpc = File::Properties::Regular->cache($tmpdb->filename, $opts));
 

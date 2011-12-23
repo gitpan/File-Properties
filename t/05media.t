@@ -16,7 +16,7 @@ use Image::Magick;
 
 ## Create a File::Properties::Cache object attached to a temporary
 ## database file
-my $tmpdb = File::Temp->new(SUFFIX => '.db');
+my $tmpdb = File::Temp->new(EXLOCK => 0, SUFFIX => '.db');
 my $opts = {};
 ok(my $fpc = File::Properties::Media->cache($tmpdb->filename, $opts));
 

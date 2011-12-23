@@ -7,12 +7,12 @@
 # Copyright © 2010,2011 Brendt Wohlberg <wohl@cpan.org>
 # See distribution LICENSE file for license details.
 #
-# Most recent modification: 21 October 2011
+# Most recent modification: 18 December 2011
 #
 # ----------------------------------------------------------------------------
 
 package File::Properties::Compressed;
-our $VERSION = 0.01;
+our $VERSION = 0.02;
 
 use File::Properties::Regular;
 use base qw(File::Properties::Regular);
@@ -54,10 +54,14 @@ sub _init {
 				    {'FileDigest' => $self->SUPER::digest}))) {
       $self->cmimetype($cent->{'ContentMimeType'});
       $self->cdigest($cent->{'ContentDigest'});
+      # Set flag indicating that this entry was obtained from the cache
+      $self->_fromcache($CacheTableName, 1);
     } else {
       my $fhnd = $self->cfilehandle;
       $self->cmimetype(File::Properties::Regular::_mimetype($fhnd->filename));
       $self->cdigest(File::Properties::Regular::_digest($fhnd->filename));
+      # Set flag indicating that this entry was not obtained from the cache
+      $self->_fromcache($CacheTableName, 0);
       if (defined $fpcr) {
 	my $row = {'FileDigest' => $self->SUPER::digest,
 		   'ContentMimeType' => $self->cmimetype,
